@@ -1,5 +1,6 @@
 package com.trash.pokeapi;
 
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -16,19 +17,31 @@ public class PokeAdaptador extends RecyclerView.Adapter<PokeAdaptador.ViewHolder
 
     private ArrayList<Pokemon> pokeDataset;
 
+    public PokeAdaptador(){
+        pokeDataset = new ArrayList<>();
+    }
+
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        return null;
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_pokemon, parent, false);
+        return new ViewHolder(view);
     }
 
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
+        Pokemon pokemon = pokeDataset.get(position);
+        holder.pokeName.setText(pokemon.getName());
 
     }
 
     @Override
     public int getItemCount() {
-        return 0;
+        return pokeDataset.size();
+    }
+
+    public void agregarListaPokemnos(ArrayList<Pokemon> arrayPokemones) {
+        pokeDataset.addAll(arrayPokemones);
+        notifyDataSetChanged();
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder{

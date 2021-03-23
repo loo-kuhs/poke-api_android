@@ -1,6 +1,8 @@
 package com.trash.pokeapi;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.os.Bundle;
 import android.util.Log;
@@ -22,12 +24,22 @@ public class MainActivity extends AppCompatActivity {
     //Instaciamos la libreria de forma global
     private Retrofit retrofit;
 
+    private RecyclerView recyclerView;
+    private PokeAdaptador pokeAdaptador;
+
     private static  final String TAG = "POKEDEX";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        recyclerView = (RecyclerView) findViewById(R.id.recyclerVw);
+        pokeAdaptador = new PokeAdaptador();
+        recyclerView.setAdapter(pokeAdaptador);
+        recyclerView.setHasFixedSize(true);
+        GridLayoutManager layoutManager = new GridLayoutManager(this, 3);
+        recyclerView.setLayoutManager(layoutManager);
 
         retrofit = new Retrofit.Builder()
                 .baseUrl("https://pokeapi.co/api/v2/")
@@ -49,10 +61,7 @@ public class MainActivity extends AppCompatActivity {
                     PokeResponse pokeResponse = response.body();
                     ArrayList<Pokemon> arrayPokemones = pokeResponse.getResults();
 
-                    for (int i = 0; i < arrayPokemones.size(); i++){
-                        Pokemon pokemon = arrayPokemones.get(i);
-                        Log.i(TAG, " Pokemon: " + pokemon.getName());
-                    }
+                    pokeAdaptador.agregarListaPokemnos(arrayPokemones);
                 } else {
                     Log.e(TAG, " onResponse: " + response.errorBody());
                 }
