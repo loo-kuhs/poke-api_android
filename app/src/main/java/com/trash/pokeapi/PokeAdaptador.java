@@ -1,5 +1,6 @@
 package com.trash.pokeapi;
 
+import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -9,6 +10,9 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions;
 import com.trash.pokeapi.modelos.Pokemon;
 
 import java.util.ArrayList;
@@ -16,8 +20,10 @@ import java.util.ArrayList;
 public class PokeAdaptador extends RecyclerView.Adapter<PokeAdaptador.ViewHolder> {
 
     private ArrayList<Pokemon> pokeDataset;
+    private Context context;
 
-    public PokeAdaptador(){
+    public PokeAdaptador(Context context){
+        this.context = context;
         pokeDataset = new ArrayList<>();
     }
 
@@ -32,6 +38,13 @@ public class PokeAdaptador extends RecyclerView.Adapter<PokeAdaptador.ViewHolder
         Pokemon pokemon = pokeDataset.get(position);
         holder.pokeName.setText(pokemon.getName());
 
+        Glide.with(context)
+                .load("https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/"+ pokemon.getNumber() +".png")
+                .centerCrop()
+                .transition(new DrawableTransitionOptions()
+                    .crossFade())
+                .diskCacheStrategy(DiskCacheStrategy.ALL)
+                .into(holder.pokePicture);
     }
 
     @Override

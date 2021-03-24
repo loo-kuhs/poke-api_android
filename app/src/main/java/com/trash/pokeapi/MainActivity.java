@@ -1,5 +1,6 @@
 package com.trash.pokeapi;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -27,6 +28,9 @@ public class MainActivity extends AppCompatActivity {
     private RecyclerView recyclerView;
     private PokeAdaptador pokeAdaptador;
 
+    private int offset;
+    private boolean masItems;
+
     private static  final String TAG = "POKEDEX";
 
     @Override
@@ -35,27 +39,50 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         recyclerView = (RecyclerView) findViewById(R.id.recyclerVw);
-        pokeAdaptador = new PokeAdaptador();
+        pokeAdaptador = new PokeAdaptador(this);
         recyclerView.setAdapter(pokeAdaptador);
         recyclerView.setHasFixedSize(true);
         GridLayoutManager layoutManager = new GridLayoutManager(this, 3);
         recyclerView.setLayoutManager(layoutManager);
+        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
+                super.onScrolled(recyclerView, dx, dy);
+
+                if (dy > 0){
+                    int visibleItemCount = layoutManager.getChildCount();
+                    int totalItemCount = layoutManager.getItemCount();
+                    int pastVisibleItems = layoutManager.findFirstVisibleItemPosition();
+
+                    if (masItems){
+                        if ((visibleItemCount + pastVisibleItems) >= totalItemCount){
+                            Log.i(TAG, " Llegamos al final.");
+                            masItems = false;
+                            offset += 20;
+                            obtenerPokemones(offset);
+                        }
+                    }
+                }
+            }
+        });
 
         retrofit = new Retrofit.Builder()
                 .baseUrl("https://pokeapi.co/api/v2/")
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
-
-        obtenerPokemones();
+        masItems = true;
+        offset = 0;
+        obtenerPokemones(offset);
     }
 
-    private void obtenerPokemones() {
+    private void obtenerPokemones(int offset) {
         pokemonesAPI service = retrofit.create(pokemonesAPI.class);
-        Call<PokeResponse> pokeRespuestaCall =  service.obtenerPokemonesLista();
+        Call<PokeResponse> pokeRespuestaCall =  service.obtenerPokemonesLista(20, offset);
 
         pokeRespuestaCall.enqueue(new Callback<PokeResponse>() {
             @Override
             public void onResponse(Call<PokeResponse> call, Response<PokeResponse> response) {
+                masItems = true;
                 if (response.isSuccessful()) {
 
                     PokeResponse pokeResponse = response.body();
@@ -69,6 +96,7 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onFailure(Call<PokeResponse> call, Throwable t) {
+                masItems = true;
                 Log.e(TAG, " onFailure: " + t.getMessage());
             }
         });
